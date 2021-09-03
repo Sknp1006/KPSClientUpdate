@@ -151,10 +151,11 @@ namespace AutoUpdater.UpdateHelper
             // 
             // pcbContainer
             // 
-            this.pcbContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pcbContainer.Location = new System.Drawing.Point(0, 0);
+            this.pcbContainer.Image = global::KPSClientUpdate.Properties.Resources.loginform_left_showe;
+            this.pcbContainer.InitialImage = global::KPSClientUpdate.Properties.Resources.loginform_left_showe;
+            this.pcbContainer.Location = new System.Drawing.Point(3, 0);
             this.pcbContainer.Name = "pcbContainer";
-            this.pcbContainer.Size = new System.Drawing.Size(180, 357);
+            this.pcbContainer.Size = new System.Drawing.Size(176, 343);
             this.pcbContainer.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pcbContainer.TabIndex = 0;
             this.pcbContainer.TabStop = false;
@@ -210,11 +211,8 @@ namespace AutoUpdater.UpdateHelper
             // 
             // rchText
             // 
-            this.rchText.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.rchText.BackColor = System.Drawing.SystemColors.Control;
-            this.rchText.Location = new System.Drawing.Point(9, 7);
+            this.rchText.Location = new System.Drawing.Point(0, 0);
             this.rchText.Name = "rchText";
             this.rchText.ReadOnly = true;
             this.rchText.Size = new System.Drawing.Size(82, 55);
@@ -325,18 +323,19 @@ namespace AutoUpdater.UpdateHelper
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void FormUpdate_Load(object sender, System.EventArgs e)
+		private void FormUpdate_Load(object sender, System.EventArgs e)  // 启动界面
 		{
 			this.bSussful = false;
-			this.lblIntro.Text = "请关闭以下应用程序:";			
-			try
+            this.lblIntro.Text = "单击[下一步]下载更新:";
+            try
 			{
 				if( this.objUpdate.LocalUpdateUrlConfigInfo != null )
 				{
-					this.Text = string.Format( "更新[{0}]--软件智能更新",this.objUpdate.LocalUpdateUrlConfigInfo.strUpdateTitle );
+					//this.Text = string.Format( "更新[{0}]--软件智能更新",this.objUpdate.LocalUpdateUrlConfigInfo.strUpdateTitle );
+					this.Text = string.Format("鲲鹏扫描端升级向导", this.objUpdate.LocalUpdateUrlConfigInfo.strUpdateTitle);
 				}				
 				this.alCloseApplications = Global.ParseCloseApplications( this.objUpdate.RemoteConfigInfo );
-				this.nStep = 2;
+				this.nStep = 4;  // 从第四步开始
 				//设置事件
 				this.objUpdate.DeleteTempFileComplete += new EventHandler(objUpdate_DeleteTempFileComplete);
 				this.objUpdate.DownloadLicenceInfoComplete += new TextEventHandler(objUpdate_DownloadLicenceInfoComplete);
@@ -350,16 +349,21 @@ namespace AutoUpdater.UpdateHelper
 				this.objUpdate.UpdateComplete += new EventHandler(objUpdate_UpdateComplete);
 				this.objUpdate.UpdateLocalConfigInfoComplete += new EventHandler(objUpdate_UpdateLocalConfigInfoComplete);
 				this.objUpdate.UpdateLocalFilesComplete += new EventHandler(objUpdate_UpdateLocalFilesComplete);
-				this.ViewRichTextBox( false,false );
-				this.m_StatusBar.Visible = false;
-				this.ViewListBox( true,false );
-				this.FillCloseApplication();
-			}
+                this.ViewRichTextBox(false, false);
+                this.m_StatusBar.Visible = false;
+                this.ViewListBox(false, false);  // 第一个参数设置为false
+                this.FillCloseApplication();
+
+                this.StepTwo();
+                //this.StepFour();
+            }
 			catch( Exception ex )
 			{
 				this.DisplayExceptionInfo( ex );
 			}
 		}
+
+		
 
 
 		/// <summary>
@@ -371,23 +375,23 @@ namespace AutoUpdater.UpdateHelper
 		{	
 			switch( this.nStep )
 			{
-				case 2:
-					this.StepTwo();
+                //case 2:
+                //    this.StepTwo();  // 显示协议
+                //    break;
+                //case 3:
+                //    this.StepThree();  // 显示更新历史记录信息
+                //    break;
+                case 4:
+					this.StepFour();  // 下载更新文件
 					break;
-				case 3:
-					this.StepThree();
-					break;
-				case 4:
-					this.StepFour();
-					break;
-				case 5:
-					this.StepFive();
-					break;
-				case 6:					
-					this.DisplayUpdateCompleteInfo();
-					break;
-				case 7:
-					this.RunMainProgram();
+                case 5:
+                    this.StepFive();  // 更新信息本地信息
+                    break;
+                case 6:
+                    this.DisplayUpdateCompleteInfo();  // 显示更新完成信息
+                    break;
+                case 7:
+					this.RunMainProgram();  // 运行主程序
 					break;					
 			}
 		}
@@ -454,7 +458,7 @@ namespace AutoUpdater.UpdateHelper
 		/// <param name="e"></param>
 		private void objUpdate_UpdateComplete( object sender,EventArgs e )
 		{	
-			this.lblIntro.Text = "更新完成";			
+			this.lblIntro.Text = "下载完成";			
 			this.rchText.Text = string.Format( "应用程序版本:{0}\r\n最后更新日期:{1:yyyy年MM月dd日}",this.objUpdate.RemoteConfigInfo.UpdateMainVersion,this.objUpdate.RemoteConfigInfo.UpdateDate );
 			this.btnNext.Enabled = true;
 			this.nStep = 6;
@@ -572,33 +576,65 @@ namespace AutoUpdater.UpdateHelper
 		}
 
 
-		#endregion		
+		#endregion
 
 		#region 方法
 
 		/// <summary>
 		/// 显示协议信息
 		/// </summary>
+		//private void StepTwo()
+		//{
+		//	try
+		//	{
+		//		if( !this.CheckApplicationsIsClosed() )
+		//		{
+		//			MessageBox.Show( "请先关闭关联的应用程序！","系统提示" );
+		//			return;
+		//		}
+		//		this.btnNext.Enabled = false;
+		//		this.lblIntro.Text = "正在下载协议信息...";
+		//		//显示协议信息
+		//		this.objUpdate.DisplayLicenceInfo();
+		//		Application.DoEvents();
+		//		this.nStep = 3;
+		//	}
+		//	catch( Exception ex )
+		//	{
+		//		this.btnNext.Enabled = true;
+		//		this.DisplayExceptionInfo( ex );
+		//	}
+		//}
 		private void StepTwo()
 		{
 			try
 			{
-				if( !this.CheckApplicationsIsClosed() )
-				{
-					MessageBox.Show( "请先关闭关联的应用程序！","系统提示" );
-					return;
+				while (true)
+    		    {
+					if (!this.CheckApplicationsIsClosed())
+                    {
+						DialogResult answer = MessageBox.Show("请先关闭正在运行的扫描端！", "系统提示", MessageBoxButtons.RetryCancel, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+						if (answer == DialogResult.Retry)
+						{
+							continue;
+						}
+						else if (answer == DialogResult.Cancel)
+						{
+							return;
+						}
+					}
+                    else
+                    {
+						break;
+                    }
 				}
-				this.btnNext.Enabled = false;
-				this.lblIntro.Text = "正在下载协议信息...";
-				//显示协议信息
-				this.objUpdate.DisplayLicenceInfo();
-				Application.DoEvents();
-				this.nStep = 3;
+
+				this.nStep = 4;  // 下一步序号
 			}
-			catch( Exception ex )
+			catch (Exception ex)
 			{
 				this.btnNext.Enabled = true;
-				this.DisplayExceptionInfo( ex );
+				this.DisplayExceptionInfo(ex);
 			}
 		}
 
@@ -679,7 +715,7 @@ namespace AutoUpdater.UpdateHelper
 		/// </summary>
 		private void DisplayUpdateCompleteInfo()
 		{
-			this.rchText.Text = string.Format( "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n    智能升级系统已成功完成升级，请单击[完成]以退出向导。" );
+			this.rchText.Text = string.Format( "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n    请单击[完成]以退出向导。" );
 			this.btnNext.Text = "完成";
 			this.nStep = 7;
 		}
@@ -695,13 +731,9 @@ namespace AutoUpdater.UpdateHelper
 			this.ViewRichTextBox( true,false );
 			this.ViewStatusBar( false );
             System.Text.StringBuilder mString = new System.Text.StringBuilder();
-			mString.Append( string.Format( "更新失败!原因如下:\r\n    {0}\r\n",ex.ToString() ) );
-			mString.Append( "    因为以上原因，系统升级失败，我们对此表示抱歉！如果错误严重，您的系统可能变的不稳定，所以建议您先不要使用，以免丢失数据。\r\n" );
-			mString.Append( "    请先按下列方法重新升级系统，如果依然存在问题请与系统管理员联系。\r\n" );
-			mString.Append( "    1、换一个服务器或升级目录重试；\r\n" );
-			mString.Append( "    2、等待5分钟后重试；\r\n" );
-			mString.Append( "    3、卸载重新安装本软件，然后再升级（注意备份）。\r\n" );
-			mString.Append( "	 请按[完成]键退出系统！" );
+			//mString.Append( string.Format( "更新失败!原因如下:\r\n    {0}\r\n",ex.ToString() ) );
+			//mString.Append( "    由于远程服务器的错误导致更新包无法下载，对此我们深感歉意。\r\n" );
+			mString.Append("\r\n\r\n\r\n    由于远程服务器的错误导致更新包无法下载，请稍后重试。\r\n");
 			this.rchText.Text = mString.ToString();
 			this.nStep = 7;
 		}
@@ -772,7 +804,7 @@ namespace AutoUpdater.UpdateHelper
 			this.m_StatusBar.Visible = false;
 			if( bVisible )
 			{
-				this.rchText.Location = new Point( 6,6 );
+				this.rchText.Location = new Point( 0, 0 );
 				this.rchText.Width = this.pnlContainer.Width - 2 * 6;
 				if( bCheckBox )
 				{
@@ -803,7 +835,7 @@ namespace AutoUpdater.UpdateHelper
 			this.lsbDownloadList.Visible = bVisible;			
 			if( bVisible )
 			{
-				this.lsbDownloadList.Location = new Point( 6,6 );
+				this.lsbDownloadList.Location = new Point( 0, 6 );
 				this.lsbDownloadList.Width = this.pnlContainer.Width - 2 * 6;
 				this.lsbDownloadList.Height = this.pnlContainer.Height - 2 * 6;
 				if( bProgressBar )
