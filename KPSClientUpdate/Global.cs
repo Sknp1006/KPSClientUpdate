@@ -8,6 +8,7 @@ using System.Xml;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace AutoUpdater.UpdateHelper
 {
@@ -259,7 +260,7 @@ namespace AutoUpdater.UpdateHelper
 				objResult = new UpdateUrlConfig();				
 				xmlDoc.Load( new MemoryStream( Global.ReadFile( xmlfile ) ) );
 				XmlNode rootNode = xmlDoc.SelectSingleNode( string.Format( "{0}",ROOT_NODE ) );
-				if( rootNode.ChildNodes.Count != 6 )
+				if( rootNode.ChildNodes.Count != 7 )
 				{
 					throw new Exception( "本地更新配置文件损坏，无法读取数据！" );
 				}
@@ -268,12 +269,13 @@ namespace AutoUpdater.UpdateHelper
 				objResult.strLastVersion	= rootNode.ChildNodes[2].Attributes[ VALUE ].InnerText;
 				objResult.dtUpdateDate		= Convert.ToDateTime( rootNode.ChildNodes[3].Attributes[ VALUE ].InnerText );
 				objResult.strLocalConfigFile= rootNode.ChildNodes[4].Attributes[ VALUE ].InnerText;
-				if( rootNode.ChildNodes[5].ChildNodes.Count != 2 )
+				objResult.schoolId          = rootNode.ChildNodes[5].Attributes[VALUE].InnerText;
+				if ( rootNode.ChildNodes[6].ChildNodes.Count != 2)  // <Application>
 				{
 					throw new Exception( "本地更新配置文件损坏，无法读取数据！" );
 				}
-				objResult.ApplicationFileName = rootNode.ChildNodes[5].ChildNodes[0].Attributes[ VALUE ].InnerText;
-				objResult.Parameters = rootNode.ChildNodes[5].ChildNodes[1].Attributes[ VALUE ].InnerText;
+				objResult.ApplicationFileName = rootNode.ChildNodes[6].ChildNodes[0].Attributes[ VALUE ].InnerText;
+				objResult.Parameters = rootNode.ChildNodes[6].ChildNodes[1].Attributes[ VALUE ].InnerText;
 			}
 			finally
 			{
@@ -315,7 +317,7 @@ namespace AutoUpdater.UpdateHelper
 					objResult.Files.Add( ParseFileDescription( configNode ) );
 				}
 			}
-			catch (System.Exception e)
+			catch (System.Exception)
             {
 				Console.WriteLine("该文件不是xml格式，尝试使用json解析");
                 try
@@ -346,28 +348,34 @@ namespace AutoUpdater.UpdateHelper
 							objResult.HistoryFile = root.data.historyFile.ToString();
 						}
 
-						FileDescription fileDescription = new FileDescription();
-						fileDescription.FileName = root.data.updateFiles.FileName.ToString();
-						fileDescription.FileSize = (int)root.data.updateFiles.FileSize;
-						fileDescription.FileVersion = root.data.updateFiles.FileVersion.ToString();
-						if (root.data.updateFiles.Applications == null)
+						List<string> files = new List<string>();
+						foreach (var item in root.data.updateFiles)
                         {
-							fileDescription.Applications = "KPScanClient.exe";
-						}
-                        else
-                        {
-							fileDescription.Applications = root.data.updateFiles.Applications.ToString();
+							FileDescription fileDescription = new FileDescription();
+							fileDescription.FileName = item.fileName.ToString();
+							fileDescription.FileSize = (int)item.fileSize;
+							fileDescription.FileVersion = item.fileVersion.ToString();
+							if (item.applications == null)
+							{
+								fileDescription.Applications = "KPScanClient.exe";  // 主程序，表示更新时要停止的程序
+							}
+							else
+							{
+								fileDescription.Applications = item.applications.ToString();
 
+							}
+							if (!files.Contains(fileDescription.FileName))
+                            {
+								files.Add(fileDescription.FileName);
+							    objResult.Files.Add(fileDescription);
+							}
 						}
-
-						objResult.Files.Add(fileDescription);
 					}
-
 				}
 				catch
                 {
-					
-                }
+					AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:远程服务器异常，请稍后重试。", DateTime.Now), true);
+				}
             }
 			finally
 			{
@@ -437,7 +445,11 @@ namespace AutoUpdater.UpdateHelper
 
 				xmlWriter.WriteStartElement( UpdateUrlConfig.LOCAL_CONFIG_FILE );		//--------LocalConfigFile---------
 				xmlWriter.WriteAttributeString( VALUE,info.strLocalConfigFile );	//value;
-				xmlWriter.WriteEndElement();										//--------LocalConfigFile---------
+				xmlWriter.WriteEndElement();                                        //--------LocalConfigFile---------
+
+				xmlWriter.WriteStartElement(UpdateUrlConfig.SCHOOLID);     //--------LocalConfigFile---------
+				xmlWriter.WriteAttributeString(VALUE, info.schoolId); //value;
+				xmlWriter.WriteEndElement();                                        //--------LocalConfigFile---------
 
 				xmlWriter.WriteStartElement( UpdateUrlConfig.APPLICATION );		//--------Application---------
 
@@ -631,8 +643,9 @@ namespace AutoUpdater.UpdateHelper
 					arrString = info.Applications.Split( new char[]{ '|' } );
 					for( int i = 0; i < arrString.Length; ++i )
 					{
-						strTmp = string.Format( "{0}\\{1}",path,arrString[ i ] );
-						if( !CheckStringExists( strTmp,alFiles ) )
+						//strTmp = string.Format( "{0}\\{1}",path,arrString[ i ] );
+						strTmp = string.Format(arrString[i]);  //
+						if ( !CheckStringExists( strTmp,alFiles ) )
 						{
 							alFiles.Add( strTmp );
 						}
@@ -874,6 +887,8 @@ namespace AutoUpdater.UpdateHelper
 		/// </summary>
 		public const string PARAMETERS					= "Parameters";
 
+		public const string SCHOOLID = "SchoolId";
+
 		#endregion
 
 		#region 字段
@@ -912,6 +927,8 @@ namespace AutoUpdater.UpdateHelper
 		/// 应用程序的执行参数
 		/// </summary>
 		public string Parameters			= string.Empty;
+
+		public string schoolId              = string.Empty;
 
 		#endregion
 		
@@ -1124,12 +1141,36 @@ namespace AutoUpdater.UpdateHelper
 		}
 	}
 
+	public class UpdateFiles
+	{
+		/// <summary>
+		/// 
+		/// </summary>
+		public string fileName { get; set; }
+		/// <summary>
+		/// 
+		/// </summary>
+		public int fileSize { get; set; }
+		/// <summary>
+		/// 
+		/// </summary>
+		public string fileVersion { get; set; }
+		/// <summary>
+		/// 
+		/// </summary>
+		public string applications { get; set; }
+		/// <summary>
+		/// 
+		/// </summary>
+		public string clientPath { get; set; }
+	}
+
 	public class Data
 	{
 		/// <summary>
 		/// 
 		/// </summary>
-		public FileDescription updateFiles { get; set; }
+		public List<UpdateFiles> updateFiles;
 		/// <summary>
 		/// 
 		/// </summary>

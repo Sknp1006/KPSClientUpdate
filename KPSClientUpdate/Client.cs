@@ -41,10 +41,20 @@ namespace SmartUpdater
 				alDone.WaitOne();//阻塞线程直到初始化完成
 				
 				if( obj.Enable )
-				{     
-					AutoUpdater.UpdateHelper.Global.WriteUpdateLog( string.Format( "{0}:更新.",DateTime.Now ),true );
-					//需要更新,执行更新程序
-					System.Windows.Forms.Application.Run( new AutoUpdater.UpdateHelper.FormUpdate( obj ) );
+				{
+					DialogResult answer;
+					answer = MessageBox.Show("扫描端有新版本，请更新！", "鲲鹏扫描端升级程序", MessageBoxButtons.OKCancel, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+					if (answer == DialogResult.OK)
+                    {
+						AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:更新.", DateTime.Now), true);
+						//需要更新,执行更新程序
+						System.Windows.Forms.Application.Run(new AutoUpdater.UpdateHelper.FormUpdate(obj));
+					}
+					else if (answer == DialogResult.Cancel)
+                    {
+						// 本次更新取消
+						return;
+                    }
 				}
 				//else
 				//{
@@ -55,11 +65,11 @@ namespace SmartUpdater
 			}
 			catch( Exception ex )
 			{
-                #if DEBUG
-				MessageBox.Show( ex.ToString() );
-                #else
-				MessageBox.Show( ex.Message );
-                #endif
+    //            #if DEBUG
+				//MessageBox.Show( ex.ToString() );
+    //            #else
+				//MessageBox.Show( ex.Message );
+    //            #endif
 			}
 		}
 

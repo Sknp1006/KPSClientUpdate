@@ -266,20 +266,19 @@ namespace AutoUpdater.UpdateHelper
 
 			//读取远程更新文件信息
 			//从远程服务器下载远程更新文件信息			
-			this.objDownload.DownloadUrl = this.localUpdateConfigInfo.strUpdateUrl;  // 文件配置信息
+			this.objDownload.DownloadUrl = this.localUpdateConfigInfo.strUpdateUrl + this.localUpdateConfigInfo.schoolId;  // 文件配置信息
 			this.objDownload.DownloadFileName = strTmpRemoteFile;			
 
 			this.alDone.Reset();
 			
-			this.objDownload.Download();  // 下载Remote.xml
+			this.objDownload.Download();  // 下载远程更新配置信息（临时）
 
 			this.alDone.WaitOne();	//等待线程直到完成
 
-			//读取远程更新配置信息
-			this.remoteUpdateInfo = Global.ParseUpdateFileConfig( strTmpRemoteFile );
+			this.remoteUpdateInfo = Global.ParseUpdateFileConfig( strTmpRemoteFile );  //远程更新配置信息
 
 			//检查是否必须更新
-			if( !this.bEnable && this.localUpdateInfo != null )
+			if ( !this.bEnable && this.localUpdateInfo != null )
 			{
 				if( this.localUpdateInfo.UpdateMainVersion != this.remoteUpdateInfo.UpdateMainVersion )
 				{
@@ -377,6 +376,11 @@ namespace AutoUpdater.UpdateHelper
 					File.Delete( strTmpFile );
 				}
 			}
+            else
+            {
+				strHistoryInfo = "暂无历史更新信息";
+
+			}
 			//引发显示更新历史记录信息事件
 			if( this.DownloadHistoryInfoComplete != null )
 			{
@@ -422,22 +426,21 @@ namespace AutoUpdater.UpdateHelper
 
 				this.objDownload.DownloadFileName = string.Format("{0}\\{1}", this.strLocalTempPath, file.FileName);
 
-				// 判断是否是msi升级包并且只有一个
 				if (alUpdateFiles.Count == 1 && ((FileDescription)alUpdateFiles[0]).FileName == "KPSClient.msi")
-				{
-					this.objDownload.DownloadUrl = "http://192.168.0.201:32689/app/GetAppInstallation?version=" + ((FileDescription)alUpdateFiles[0]).FileVersion;
-				}
-                else
                 {
-					if (file.ClientPath.Length > 0)
+					int _finded = this.remoteUpdateInfo.UpdateWebPath.LastIndexOf("/");
+					if (_finded != -1)
 					{
-						this.objDownload.DownloadUrl = string.Format("{0}/{1}/{2}", this.remoteUpdateInfo.UpdateWebPath, file.ClientPath, file.FileName);
-					}
-					else
-					{
-						this.objDownload.DownloadUrl = string.Format("{0}/{1}", this.remoteUpdateInfo.UpdateWebPath, file.FileName);
+						//this.objDownload.DownloadUrl = string.Format("{0}/app/GetAppInstallation?version=", this.remoteUpdateInfo.UpdateWebPath.Substring(0, _finded)) + ((FileDescription)alUpdateFiles[0]).FileVersion;
+						this.objDownload.DownloadUrl = this.remoteUpdateInfo.UpdateWebPath;
 					}
 				}
+				else
+				{
+					throw new Exception("远程文件错误，请稍后重试。");
+                }
+
+					
 				this.objDownload.FileSize = file.FileSize;
 				this.alDone.Reset();
 				//引发开始下载某个文件事件

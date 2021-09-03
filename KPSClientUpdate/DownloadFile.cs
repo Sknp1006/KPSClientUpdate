@@ -148,8 +148,8 @@ namespace AutoUpdater.UpdateHelper
 			try
 			{
 				this.objWebRequest = (HttpWebRequest)WebRequest.Create( this.strUrl );
-				this.objWebRequest.Headers.Add("Accept-Encoding", "identity");  // 
-				this.objWebRequest.AllowAutoRedirect = true;
+                this.objWebRequest.Timeout = 5000;
+                this.objWebRequest.AllowAutoRedirect = true;
 //				int nOffset = 0;
 				long nCount = 0;
 				byte[] buffer = new byte[ 1024 * 1024 ];	//1MB
@@ -165,6 +165,10 @@ namespace AutoUpdater.UpdateHelper
                 else
                 {
 					if (this.bCheckFileSize && nMaxLength != this.nFileSize)
+					{
+						throw new Exception(string.Format("文件\"{0}\"被损坏,无法下载!", Path.GetFileName(this.strFile)));
+					}
+					else if (nMaxLength == 0 && this.nFileSize == 0)
 					{
 						throw new Exception(string.Format("文件\"{0}\"被损坏,无法下载!", Path.GetFileName(this.strFile)));
 					}
