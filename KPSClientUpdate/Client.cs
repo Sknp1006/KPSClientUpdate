@@ -60,7 +60,8 @@ namespace SmartUpdater
 				//{
 				//	//不需更新,执行指定的应用程序
 				//	AutoUpdater.UpdateHelper.Global.WriteUpdateLog( "执行应用程序.",true );
-				//	System.Diagnostics.Process.Start( string.Format( "{0}\\{1}",Global.AssemblyPath,obj.LocalUpdateUrlConfigInfo.ApplicationFileName ),obj.LocalUpdateUrlConfigInfo.Parameters );
+				//	System.Diagnostics.Process.Start( string.Format( "{0}\\{1}",Global.AssemblyPath,obj.Local
+				//	Info.ApplicationFileName ),obj.LocalUpdateUrlConfigInfo.Parameters );
 				//}
 			}
 			catch( Exception ex )

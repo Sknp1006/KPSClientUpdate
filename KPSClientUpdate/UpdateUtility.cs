@@ -266,7 +266,7 @@ namespace AutoUpdater.UpdateHelper
 
 			//读取远程更新文件信息
 			//从远程服务器下载远程更新文件信息			
-			this.objDownload.DownloadUrl = this.localUpdateConfigInfo.strUpdateUrl + this.localUpdateConfigInfo.schoolId;  // 文件配置信息
+			this.objDownload.DownloadUrl = this.localUpdateConfigInfo.strUpdateUrl + "app/getLatestAppPath?schoolId=" + this.localUpdateConfigInfo.schoolId + "&localVersion=" + this.localUpdateConfigInfo.strLastVersion;  // 文件配置信息
 			this.objDownload.DownloadFileName = strTmpRemoteFile;			
 
 			this.alDone.Reset();
@@ -437,7 +437,7 @@ namespace AutoUpdater.UpdateHelper
 				}
 				else
 				{
-					throw new Exception("远程文件错误，请稍后重试。");
+					throw new Exception("远程文件异常，下载终止！");
                 }
 
 					
@@ -532,6 +532,15 @@ namespace AutoUpdater.UpdateHelper
 			{
 				this.UpdateComplete( this,EventArgs.Empty );
 			}
+		}
+
+		public void callback()
+        {
+			// 成功回传
+			string callback_url = this.localUpdateConfigInfo.strUpdateUrl + "app/saveSchoolInfo?schoolId="+ this.localUpdateConfigInfo.schoolId + "&appVersion=" + this.remoteUpdateInfo.UpdateMainVersion;
+			this.alDone.Reset();
+			this.objDownload.Download();
+			this.alDone.WaitOne();
 		}
 
 

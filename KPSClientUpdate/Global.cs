@@ -375,6 +375,8 @@ namespace AutoUpdater.UpdateHelper
 				catch
                 {
 					AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:远程服务器异常，请稍后重试。", DateTime.Now), true);
+					// 直接退出程序
+					throw new Exception(string.Format("{0}:远程服务器异常，请稍后重试。"));
 				}
             }
 			finally

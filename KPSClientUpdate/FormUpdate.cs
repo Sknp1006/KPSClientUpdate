@@ -115,7 +115,7 @@ namespace AutoUpdater.UpdateHelper
             this.pnlBottom.Controls.Add(this.btnNext);
             this.pnlBottom.Controls.Add(this.btnClose);
             this.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlBottom.Location = new System.Drawing.Point(0, 418);
+            this.pnlBottom.Location = new System.Drawing.Point(0, 404);
             this.pnlBottom.Name = "pnlBottom";
             this.pnlBottom.Size = new System.Drawing.Size(594, 37);
             this.pnlBottom.TabIndex = 2;
@@ -146,7 +146,7 @@ namespace AutoUpdater.UpdateHelper
             this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.pnlLeft.Location = new System.Drawing.Point(0, 61);
             this.pnlLeft.Name = "pnlLeft";
-            this.pnlLeft.Size = new System.Drawing.Size(180, 357);
+            this.pnlLeft.Size = new System.Drawing.Size(180, 343);
             this.pnlLeft.TabIndex = 3;
             // 
             // pcbContainer
@@ -167,7 +167,7 @@ namespace AutoUpdater.UpdateHelper
             this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlMain.Location = new System.Drawing.Point(180, 61);
             this.pnlMain.Name = "pnlMain";
-            this.pnlMain.Size = new System.Drawing.Size(414, 357);
+            this.pnlMain.Size = new System.Drawing.Size(414, 343);
             this.pnlMain.TabIndex = 4;
             // 
             // pnlContainer
@@ -179,7 +179,7 @@ namespace AutoUpdater.UpdateHelper
             this.pnlContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlContainer.Location = new System.Drawing.Point(0, 32);
             this.pnlContainer.Name = "pnlContainer";
-            this.pnlContainer.Size = new System.Drawing.Size(414, 325);
+            this.pnlContainer.Size = new System.Drawing.Size(414, 311);
             this.pnlContainer.TabIndex = 2;
             // 
             // chkAgree
@@ -232,7 +232,7 @@ namespace AutoUpdater.UpdateHelper
             // 
             // m_StatusBar
             // 
-            this.m_StatusBar.Location = new System.Drawing.Point(180, 396);
+            this.m_StatusBar.Location = new System.Drawing.Point(180, 382);
             this.m_StatusBar.Name = "m_StatusBar";
             this.m_StatusBar.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
             this.sp_DownFileName,
@@ -256,7 +256,7 @@ namespace AutoUpdater.UpdateHelper
             // FormUpdate
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(6, 14);
-            this.ClientSize = new System.Drawing.Size(594, 455);
+            this.ClientSize = new System.Drawing.Size(594, 441);
             this.Controls.Add(this.m_StatusBar);
             this.Controls.Add(this.pnlMain);
             this.Controls.Add(this.pnlLeft);
@@ -613,10 +613,14 @@ namespace AutoUpdater.UpdateHelper
     		    {
 					if (!this.CheckApplicationsIsClosed())
                     {
-						DialogResult answer = MessageBox.Show("请先关闭正在运行的扫描端！", "系统提示", MessageBoxButtons.RetryCancel, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-						if (answer == DialogResult.Retry)
+						DialogResult answer = MessageBox.Show("有正在运行的扫描端！是否关闭？", "系统提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+						if (answer == DialogResult.OK)
 						{
-							continue;
+							// 杀死进程
+							Process[] p = Process.GetProcessesByName("KPScanClient");
+							p[0].Kill();
+							return;
+
 						}
 						else if (answer == DialogResult.Cancel)
 						{
@@ -718,6 +722,9 @@ namespace AutoUpdater.UpdateHelper
 			this.rchText.Text = string.Format( "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n    请单击[完成]以退出向导。" );
 			this.btnNext.Text = "完成";
 			this.nStep = 7;
+
+			// 这里要回传
+			this.objUpdate.callback();
 		}
 
 
@@ -760,7 +767,7 @@ namespace AutoUpdater.UpdateHelper
 		private bool CheckApplicationsIsClosed()
 		{
 			bool bReturn = true;
-			foreach( Process info in Process.GetProcesses() )
+			foreach( Process info in Process.GetProcesses() )  
 			{
 				foreach( string file in this.lsbDownloadList.Items )
 				{
