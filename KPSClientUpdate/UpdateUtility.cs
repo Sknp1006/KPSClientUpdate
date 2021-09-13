@@ -266,8 +266,9 @@ namespace AutoUpdater.UpdateHelper
 
 			//读取远程更新文件信息
 			//从远程服务器下载远程更新文件信息			
-			this.objDownload.DownloadUrl = this.localUpdateConfigInfo.strUpdateUrl + this.localUpdateConfigInfo.schoolId;  // 文件配置信息
-			this.objDownload.DownloadFileName = strTmpRemoteFile;			
+			this.objDownload.DownloadUrl = this.localUpdateConfigInfo.strUpdateUrl + "api/webcloud/app/getLatestAppPath?schoolId=" + this.localUpdateConfigInfo.schoolId + "&localVersion=" + this.localUpdateConfigInfo.strLastVersion;  // 文件配置信息
+			this.objDownload.DownloadFileName = strTmpRemoteFile;
+			this.objDownload.strAuthorization = this.localUpdateConfigInfo.Parameters;  // token
 
 			this.alDone.Reset();
 			
@@ -288,7 +289,7 @@ namespace AutoUpdater.UpdateHelper
 				{
 					this.bEnable = true;
 				}
-			}			
+			}
 
 			//处此引发初始完成，并用事件通知主程序需关闭的UI程序列表,然后由UI关闭关联的应用程序
 			if( this.InializationDownloadInfoComplete != null )
@@ -437,7 +438,7 @@ namespace AutoUpdater.UpdateHelper
 				}
 				else
 				{
-					throw new Exception("远程文件错误，请稍后重试。");
+					throw new Exception("远程文件异常，下载终止！");
                 }
 
 					
@@ -532,6 +533,15 @@ namespace AutoUpdater.UpdateHelper
 			{
 				this.UpdateComplete( this,EventArgs.Empty );
 			}
+		}
+
+		public void callback()
+        {
+			// 成功回传
+			string callback_url = this.localUpdateConfigInfo.strUpdateUrl + "api/webcloud/app/saveSchoolInfo?schoolId=" + this.localUpdateConfigInfo.schoolId + "&appVersion=" + this.remoteUpdateInfo.UpdateMainVersion;
+			this.alDone.Reset();
+			this.objDownload.Download(callback_url);
+			this.alDone.WaitOne();
 		}
 
 
