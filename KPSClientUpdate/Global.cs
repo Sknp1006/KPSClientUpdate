@@ -327,6 +327,11 @@ namespace AutoUpdater.UpdateHelper
 						string json = file.ReadToEnd();
 						Root root = JsonConvert.DeserializeObject<Root>(json);
 
+						if (root.result == "false")
+                        {
+							AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:远程服务器异常,错误类型:{1},错误信息:{2}", DateTime.Now, root.errorCode, root.errorMsg), true);
+						}
+
 						objResult.UpdateSetting = root.data.updateSetting.ToString() == "1";
 						objResult.UpdateMainVersion = root.data.updateMainVersion;
 						objResult.UpdateDate = Convert.ToDateTime(root.data.updateDate);
@@ -374,9 +379,9 @@ namespace AutoUpdater.UpdateHelper
 				}
 				catch
                 {
-					AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:远程服务器异常，请稍后重试。", DateTime.Now), true);
+					AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:暂时无法与远程服务器通讯。", DateTime.Now), true);
 					// 直接退出程序
-					throw new Exception(string.Format("{0}:远程服务器异常，请稍后重试。"));
+					throw new Exception(string.Format("暂时无法与远程服务器通讯。"));
 				}
             }
 			finally

@@ -45,6 +45,10 @@ namespace AutoUpdater.UpdateHelper
 		#endregion
 
 		#region 字段
+		/// <summary>
+		/// token
+		/// </summary>
+		public string strAuthorization { get; set; }
 
 		/// <summary>
 		/// 欲下载的URL
@@ -148,13 +152,17 @@ namespace AutoUpdater.UpdateHelper
 			try
 			{
 				this.objWebRequest = (HttpWebRequest)WebRequest.Create( this.strUrl );
-                this.objWebRequest.Timeout = 5000;
-                this.objWebRequest.AllowAutoRedirect = true;
-//				int nOffset = 0;
+				this.objWebRequest.Timeout = 5000;
+				this.objWebRequest.Headers.Add("Authorization", this.strAuthorization);
+				this.objWebRequest.AllowAutoRedirect = true;
+				Global.WriteUpdateLog(string.Format("{0}:请求地址：{1}", DateTime.Now, this.strUrl), true);
+				Global.WriteUpdateLog(string.Format("{0}:请求头：{1}", DateTime.Now, objWebRequest.Headers), true);
+				//				int nOffset = 0;
 				long nCount = 0;
 				byte[] buffer = new byte[ 1024 * 1024 ];	//1MB
 				int nRecv = 0;	//接收到的字节数
 				this.objWebResponse = (HttpWebResponse)this.objWebRequest.GetResponse();
+				Global.WriteUpdateLog(string.Format("{0}:响应码：{1}", DateTime.Now, this.objWebResponse.StatusCode), true);
 				Stream recvStream = this.objWebResponse.GetResponseStream();
 				long nMaxLength = (int)this.objWebResponse.ContentLength;
 				if (nMaxLength == -1)
@@ -204,6 +212,35 @@ namespace AutoUpdater.UpdateHelper
 //				}
 //
 			}
+		}
+		public void Download(string strUrl)
+		{
+			try
+			{
+				this.objWebRequest = (HttpWebRequest)WebRequest.Create(strUrl);
+				Global.WriteUpdateLog(string.Format("{0}:发起请求：{1}", DateTime.Now, strUrl), true);
+				this.objWebRequest.Timeout = 5000;
+				this.objWebRequest.Method = "POST";
+				this.objWebRequest.Headers.Add("Authorization", this.strAuthorization);
+				this.objWebRequest.AllowAutoRedirect = true;
+				this.objWebResponse = (HttpWebResponse)this.objWebRequest.GetResponse();
+				Global.WriteUpdateLog(string.Format("{0}:响应信息：{1}", DateTime.Now, this.objWebResponse.StatusCode), true);
+				if (this.objWebResponse.StatusCode == HttpStatusCode.OK)
+                {
+					AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}\t回传完成.", DateTime.Now.ToString("F")), true);
+				}
+                else
+                {
+					AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}\t回传异常.", DateTime.Now.ToString("F")), true);
+				}
+
+				if (this.DownloadFileComplete != null)
+					this.DownloadFileComplete(this, EventArgs.Empty);
+			}
+			catch (System.Exception)
+            {
+				return;
+            }
 		}
 
 

@@ -754,7 +754,7 @@ namespace AutoUpdater.UpdateHelper
 			//更新成功，运行主程序
 			if( this.bSussful && this.objUpdate.LocalUpdateUrlConfigInfo.ApplicationFileName != null && this.objUpdate.LocalUpdateUrlConfigInfo.ApplicationFileName.Length > 0 )
 			{
-				System.Diagnostics.Process.Start( string.Format( "{0}\\{1}",Global.AssemblyPath,this.objUpdate.LocalUpdateUrlConfigInfo.ApplicationFileName ),this.objUpdate.LocalUpdateUrlConfigInfo.Parameters);
+				System.Diagnostics.Process.Start( string.Format( "{0}\\{1}",Global.AssemblyPath,this.objUpdate.LocalUpdateUrlConfigInfo.ApplicationFileName ));
 			}
 			Application.Exit();
 		}
