@@ -624,6 +624,7 @@ namespace AutoUpdater.UpdateHelper
 						}
 						else if (answer == DialogResult.Cancel)
 						{
+							
 							return;
 						}
 					}
@@ -646,23 +647,23 @@ namespace AutoUpdater.UpdateHelper
 		/// <summary>
 		/// 显示更新历史记录信息
 		/// </summary>
-		private void StepThree()
-		{
-			try
-			{				
-				this.lblIntro.Text = "正在下载更新历史记录...";
-				this.btnNext.Enabled = false;
-				//显示协议信息
-				this.objUpdate.DisplayHistoryInfo();
-//				Application.DoEvents();
-				this.nStep = 4;
-			}
-			catch( Exception ex )
-			{
-				this.btnNext.Enabled = true;
-				this.DisplayExceptionInfo( ex );
-			}
-		}
+//		private void StepThree()
+//		{
+//			try
+//			{				
+//				this.lblIntro.Text = "正在下载更新历史记录...";
+//				this.btnNext.Enabled = false;
+//				//显示协议信息
+//				this.objUpdate.DisplayHistoryInfo();
+////				Application.DoEvents();
+//				this.nStep = 4;
+//			}
+//			catch( Exception ex )
+//			{
+//				this.btnNext.Enabled = true;
+//				this.DisplayExceptionInfo( ex );
+//			}
+//		}
 
 
 		/// <summary>
@@ -678,7 +679,7 @@ namespace AutoUpdater.UpdateHelper
 				this.btnNext.Enabled = false;
 				this.ViewListBox( true,true );
 				this.ViewProgressBar( true );
-				this.ViewStatusBar( true );	
+				this.ViewStatusBar( false );	
 				this.objUpdate.DownloadUpdateFiles();
 				this.nStep = 5;
 			}

@@ -267,6 +267,7 @@ namespace AutoUpdater.UpdateHelper
 				objResult.strUpdateTitle	= rootNode.ChildNodes[0].Attributes[ VALUE ].InnerText;
 				objResult.strUpdateUrl		= rootNode.ChildNodes[1].Attributes[ VALUE ].InnerText;
 				objResult.strLastVersion	= rootNode.ChildNodes[2].Attributes[ VALUE ].InnerText;
+				AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:当前版本号:{1}", DateTime.Now, objResult.strLastVersion), true);
 				objResult.dtUpdateDate		= Convert.ToDateTime( rootNode.ChildNodes[3].Attributes[ VALUE ].InnerText );
 				objResult.strLocalConfigFile= rootNode.ChildNodes[4].Attributes[ VALUE ].InnerText;
 				objResult.schoolId          = rootNode.ChildNodes[5].Attributes[VALUE].InnerText;
@@ -325,11 +326,16 @@ namespace AutoUpdater.UpdateHelper
 					using (System.IO.StreamReader file = System.IO.File.OpenText(xmlfile))
 					{
 						string json = file.ReadToEnd();
+						AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:{1}", DateTime.Now, json), true);
 						Root root = JsonConvert.DeserializeObject<Root>(json);
 
 						if (root.result == "false")
                         {
 							AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:远程服务器异常,错误类型:{1},错误信息:{2}", DateTime.Now, root.errorCode, root.errorMsg), true);
+						}
+                        else
+                        {
+							AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:成功获取版本信息,版本号:{1}", DateTime.Now, root.data.updateMainVersion), true);
 						}
 
 						objResult.UpdateSetting = root.data.updateSetting.ToString() == "1";

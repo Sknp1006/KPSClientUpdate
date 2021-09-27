@@ -249,18 +249,18 @@ namespace AutoUpdater.UpdateHelper
 			this.localUpdateConfigInfo = Global.ParseUpdateUrlConfig( this.strUpdateUrlFile );
 
 			//设置远程更新配置文件的本地复本
-			this.strRemoteFile = string.Format( "{0}\\{1}",Global.AssemblyPath,this.localUpdateConfigInfo.strLocalConfigFile );
+			//this.strRemoteFile = string.Format( "{0}\\{1}",Global.AssemblyPath,this.localUpdateConfigInfo.strLocalConfigFile );
 
-			if( File.Exists( this.strRemoteFile ) )
-			{				
-				//读取本地存储的远程更新配置信息
-				this.localUpdateInfo = Global.ParseUpdateFileConfig( this.strRemoteFile );
-			}
-			else
-			{
-				//本地无远程更新配置信息复本，必须更新
-				this.bEnable = true;
-			}
+			//if( File.Exists( this.strRemoteFile ) )
+			//{				
+			//	//读取本地存储的远程更新配置信息
+			//	this.localUpdateInfo = Global.ParseUpdateFileConfig( this.strRemoteFile );
+			//}
+			//else
+			//{
+			//	//本地无远程更新配置信息复本，必须更新
+			//	this.bEnable = true;
+			//}
 			
 			this.strTmpRemoteFile = Global.GetRandomFile( strLocalTempPath,string.Empty,"bin" );
 
@@ -278,21 +278,36 @@ namespace AutoUpdater.UpdateHelper
 
 			this.remoteUpdateInfo = Global.ParseUpdateFileConfig( strTmpRemoteFile );  //远程更新配置信息
 
-			//检查是否必须更新
-			if ( !this.bEnable && this.localUpdateInfo != null )
-			{
-				if( this.localUpdateInfo.UpdateMainVersion != this.remoteUpdateInfo.UpdateMainVersion )
+            //检查是否必须更新
+            //if ( !this.bEnable && this.localUpdateInfo != null )
+            //{
+            //	if( this.localUpdateInfo.UpdateMainVersion != this.remoteUpdateInfo.UpdateMainVersion )
+            //	{
+            //		this.bEnable = true;
+            //	}
+            //	if( this.localUpdateConfigInfo.strLastVersion != this.remoteUpdateInfo.UpdateMainVersion )
+            //	{
+            //		this.bEnable = true;
+            //	}
+            //}
+            if (this.localUpdateConfigInfo.strLastVersion != this.remoteUpdateInfo.UpdateMainVersion)
+            {
+				// 比较版本号，如果本地版小于服务器版
+				Version local = new Version(this.localUpdateConfigInfo.strLastVersion);
+				Version remote = new Version(this.remoteUpdateInfo.UpdateMainVersion);
+				if (local < remote)
 				{
+					AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:本地版本号不是最新，需要更新。", DateTime.Now), true);
 					this.bEnable = true;
 				}
-				if( this.localUpdateConfigInfo.strLastVersion != this.remoteUpdateInfo.UpdateMainVersion )
-				{
-					this.bEnable = true;
-				}
+            }
+            else
+            {
+				AutoUpdater.UpdateHelper.Global.WriteUpdateLog(string.Format("{0}:本地版本无需更新。", DateTime.Now), true);
 			}
 
-			//处此引发初始完成，并用事件通知主程序需关闭的UI程序列表,然后由UI关闭关联的应用程序
-			if( this.InializationDownloadInfoComplete != null )
+            //处此引发初始完成，并用事件通知主程序需关闭的UI程序列表,然后由UI关闭关联的应用程序
+            if ( this.InializationDownloadInfoComplete != null )
 			{
 				this.InializationDownloadInfoComplete( new ArrayListEventArgs( Global.ParseCloseApplications( this.remoteUpdateInfo ) ) );
 			}
@@ -400,6 +415,7 @@ namespace AutoUpdater.UpdateHelper
 			//获取欲下载的文件列表			
 			if( this.localUpdateInfo != null )	
 			{
+				// 对比本地和服务器文件差异（全量更新不需要）
 				this.alUpdateFiles = Global.CompareLocalAndRemoteConfigInfo( this.remoteUpdateInfo,this.localUpdateInfo );
 			}
 			else

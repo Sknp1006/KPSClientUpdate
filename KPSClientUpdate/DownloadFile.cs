@@ -172,15 +172,17 @@ namespace AutoUpdater.UpdateHelper
 				}
                 else
                 {
-					if (this.bCheckFileSize && nMaxLength != this.nFileSize)
-					{
-						throw new Exception(string.Format("文件\"{0}\"被损坏,无法下载!", Path.GetFileName(this.strFile)));
-					}
-					else if (nMaxLength == 0 && this.nFileSize == 0)
-					{
-						throw new Exception(string.Format("文件\"{0}\"被损坏,无法下载!", Path.GetFileName(this.strFile)));
-					}
-				}
+                    // 屏蔽文件大小校验
+
+                    //if (this.bCheckFileSize && nMaxLength != this.nFileSize)
+                    //{
+                    //    throw new Exception(string.Format("文件\"{0}\"被损坏,无法下载!", Path.GetFileName(this.strFile)));
+                    //}
+                    //else if (nMaxLength == 0 && this.nFileSize == 0)
+                    //{
+                    //    throw new Exception(string.Format("文件\"{0}\"被损坏,无法下载!", Path.GetFileName(this.strFile)));
+                    //}
+                }
 
                 if ( this.DownloadFileStart != null )
 					this.DownloadFileStart( new DownloadFileStartEventArgs( (int)nMaxLength ) );
